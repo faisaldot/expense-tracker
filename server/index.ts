@@ -10,9 +10,7 @@ const app = new Hono();
 app.use(logger());
 
 app.route("/api/health", healthRoute);
-const expensesApiRoute = app
-  .basePath("/api")
-  .route("/api/expenses", expensesRoute);
+const expensesApiRoute = app.basePath("/api").route("/expenses", expensesRoute);
 
 export default {
   port: PORT,
