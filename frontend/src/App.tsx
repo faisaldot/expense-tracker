@@ -6,13 +6,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useEffect, useState } from "react";
+import { hc } from "hono/client";
+import { type ExpensesApiType } from "../../server";
+
+const client = hc<ExpensesApiType>("/");
 
 export default function App() {
   const [totalSpent, setTotalSpent] = useState(0);
 
   useEffect(() => {
     const fetchTotalSpent = async () => {
-      const response = await fetch("api/expenses/total-spent");
+      const response = await client.api.expenses["total-spent"].$get();
       const data = await response.json();
       console.log(data);
 
