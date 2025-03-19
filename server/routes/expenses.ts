@@ -55,9 +55,6 @@ const expensesRoute = new Hono()
   })
   .get("/total-spent", async (c) => {
     const total = fakeExpense.reduce((acc, expense) => acc + expense.amount, 0);
-    if (!total) {
-      return c.notFound();
-    }
     return c.json({ total });
   });
 
