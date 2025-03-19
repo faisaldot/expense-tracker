@@ -1,5 +1,5 @@
 import { hc } from "hono/client";
-import { type ExpensesApiType } from "../../../server";
+import { type ExpensesApiType } from "@server/index";
 
 const client = hc<ExpensesApiType>("/");
 
