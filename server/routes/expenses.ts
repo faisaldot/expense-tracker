@@ -1,8 +1,6 @@
 import { Hono } from "hono";
-import { number, z } from "zod";
+import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
-
-const expensesRoute = new Hono();
 
 const expenseSchema = z.object({
   id: z.number().int().positive(),
@@ -20,42 +18,47 @@ const fakeExpense: Expense[] = [
   { id: 3, title: "Bought a bluetooth", amount: 390 },
 ];
 
-expensesRoute.get("/", (c) => {
-  return c.json({ expenses: fakeExpense });
-});
+const expensesRoute = new Hono()
+  .get("/", (c) => {
+    return c.json({ expenses: fakeExpense });
+  })
+  .post("/", zValidator("json", createPostSchema), async (c) => {
+    const expense = c.req.valid("json");
 
-expensesRoute.post("/", zValidator("json", createPostSchema), async (c) => {
-  const expense = await c.req.valid("json");
+    if (!expense) {
+      return c.notFound();
+    }
 
-  if (!expense) {
-    return c.notFound();
-  }
+    fakeExpense.push({ ...expense, id: fakeExpense.length + 1 });
+    return c.json(expense);
+  })
+  .get("/:id{[0-9]+}", async (c) => {
+    const id = Number.parseInt(c.req.param("id"));
+    const expense = fakeExpense.find((expense) => expense.id === id);
 
-  fakeExpense.push({ ...expense, id: fakeExpense.length + 1 });
-  return c.json(expense);
-});
+    if (!expense) {
+      return c.notFound();
+    }
 
-expensesRoute.get("/:id{[0-9]+}", async (c) => {
-  const id = Number.parseInt(c.req.param("id"));
-  const expense = fakeExpense.find((expense) => expense.id === id);
+    return c.json({ expense });
+  })
+  .delete("/:id{[0-9]+}", async (c) => {
+    const id = Number.parseInt(c.req.param("id"));
+    const index = fakeExpense.findIndex((expense) => expense.id === id);
+    const expense = fakeExpense.splice(index, id)[0];
 
-  if (!expense) {
-    return c.notFound();
-  }
+    if (!expense) {
+      return c.notFound();
+    }
 
-  return c.json({ expense });
-});
-
-expensesRoute.delete("/:id{[0-9]+}", async (c) => {
-  const id = Number.parseInt(c.req.param("id"));
-  const index = fakeExpense.findIndex((expense) => expense.id === id);
-  const expense = fakeExpense.splice(index, id)[0];
-
-  if (!expense) {
-    return c.notFound();
-  }
-
-  return c.json({ expense });
-});
+    return c.json({ expense });
+  })
+  .get("/total-spent", async (c) => {
+    const total = fakeExpense.reduce((acc, expense) => acc + expense.amount, 0);
+    if (!total) {
+      return c.notFound();
+    }
+    return c.json({ total });
+  });
 
 export { expensesRoute };

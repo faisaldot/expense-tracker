@@ -10,9 +10,13 @@ const app = new Hono();
 app.use(logger());
 
 app.route("/api/health", healthRoute);
-app.route("/api/expenses", expensesRoute);
+const expensesApiRoute = app
+  .basePath("/api")
+  .route("/api/expenses", expensesRoute);
 
 export default {
   port: PORT,
   fetch: app.fetch,
 };
+
+export type ExpensesApiType = typeof expensesApiRoute;
