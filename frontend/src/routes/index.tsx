@@ -1,3 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
 import {
   Card,
   CardContent,
@@ -8,8 +9,15 @@ import {
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 
+export const Route = createFileRoute("/")({
+  component: App,
+});
+
 async function fetchTotalSpent() {
   const response = await api.expenses["total-spent"].$get();
+  if (!response.ok) {
+    throw new Error("failed to fetch");
+  }
   const data = await response.json();
   return data.total;
 }
